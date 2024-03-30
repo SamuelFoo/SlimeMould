@@ -3,9 +3,10 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation, PillowWriter
-from slime.cell import Cell
-from slime.food import FoodCell
-from slime.mould import Mould
+
+from ..slime.cell import Cell
+from ..slime.food import FoodCell
+from ..slime.mould import Mould
 
 
 class Dish:
@@ -45,6 +46,8 @@ class Dish:
         """
         Adds food cells in a square with length size
         """
+        self.food_positions_array = np.array([foods["x"], foods["y"]]).T
+
         for i, station in foods.iterrows():
             idx = (station["x"], station["y"])
             value = station["value"]
@@ -122,6 +125,7 @@ class Dish:
         )
 
         def func(frame):
+            print(f"{frame} out of {frames}")
             self.mould.evolve()
             im.set_data(self.pheromones(self.lattice).T)
             return [im]
@@ -150,6 +154,9 @@ class Dish:
 
     def get_food_position(self, food_id):
         return self.food_positions[food_id]
+
+    def get_food_positions(self, food_idxs):
+        return self.food_positions_array[np.array(list(food_idxs)).astype(np.int64)]
 
     def add_food_edge(self, source, target):
         self.food_graph.add_edge(source, target)

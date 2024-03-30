@@ -1,4 +1,4 @@
-from slime.cell import Cell
+from ..slime.cell import Cell
 
 
 class FoodCell(Cell):

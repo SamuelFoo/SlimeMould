@@ -2,8 +2,10 @@ import math
 import random
 
 import numpy as np
-from slime.cell import Cell
-from slime.slime import SlimeCell
+from scipy.spatial.distance import cdist
+
+from ..slime.cell import Cell
+from ..slime.slime import SlimeCell
 
 TARGET_SWITCH_THRESHOLD = 5
 
@@ -100,7 +102,7 @@ class Mould:
                     random.random() < init_mould_coverage
                     and (x, y) not in self.dish.get_all_foods_idx()
                 ):
-                    self.slime_cell_generator(idx=(x, y))
+                    self.slime_cell_generator(coord=(x, y))
         self.setup_capital_slime()
         self.update_target_food()
 
@@ -112,14 +114,14 @@ class Mould:
             previous_capital_slime = self.capital_slime
             previous_capital_slime.remove_capital()
             self.update_slime_cell(
-                previous_capital_slime.get_idx(), previous_capital_slime
+                previous_capital_slime.get_coord(), previous_capital_slime
             )
         self.capital_slime = get_corner_slime_cells(
             self.slime_cells, random.choice([0, 1, 2, 3])
         )
-        self.update_slime_cell(self.capital_slime.get_idx(), self.capital_slime)
+        self.update_slime_cell(self.capital_slime.get_coord(), self.capital_slime)
 
-    def slime_cell_generator(self, idx, pheromone=None, decay=0, is_capital=False):
+    def slime_cell_generator(self, coord, pheromone=None, decay=0, is_capital=False):
         """
         generate a slime cell
         :param idx: the tuple index to generate a slime cell
@@ -131,7 +133,7 @@ class Mould:
         if pheromone is None:
             pheromone = 4.0 * (1 - decay)
         slime_cell = SlimeCell(
-            idx=idx,
+            coord=coord,
             pheromone=pheromone,
             mould=self,
             dish=self.dish,
@@ -139,7 +141,7 @@ class Mould:
         )
         if slime_cell.is_capital:
             self.capital_slime = slime_cell
-        self.update_slime_cell(slime_cell.get_idx(), slime_cell)
+        self.update_slime_cell(slime_cell.get_coord(), slime_cell)
         return slime_cell
 
     def find_nearest_connected_food(self, food_id):
@@ -148,17 +150,19 @@ class Mould:
         :param food_id: the id of the target food
         :return: the nearest connected food to the target food
         """
-        min_dist = -1
-        min_i = -1
+
+        if len(self.reached_food_ids) == 0:
+            min_i = -1
+            return min_i
+
         food_idx = self.dish.get_food_position(food_id)
-        for i in self.reached_food_ids:
-            if i == food_id:
-                continue
-            reachable_food_idx = self.dish.get_food_position(i)
-            dist = math.dist(food_idx, reachable_food_idx)
-            if min_dist > dist or min_dist == -1:
-                min_dist = dist
-                min_i = i
+        dists = cdist(
+            self.dish.get_food_positions(self.reached_food_ids), [np.array(food_idx)]
+        )
+        argmin = dists.argmin()
+        min_i = list(self.reached_food_ids)[argmin]
+        # min_dist = dists[argmin][0]
+
         return min_i
 
     def update_food_connection(self, food_id):
