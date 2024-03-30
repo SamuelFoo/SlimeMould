@@ -1,17 +1,23 @@
+import matplotlib.pyplot as plt
 import networkx as nx
-
+import numpy as np
+import pandas as pd
+from matplotlib.animation import FuncAnimation, PillowWriter
+from slime.cell import Cell
 from slime.food import FoodCell
 from slime.mould import Mould
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation, PillowWriter
-import pandas as pd
-from slime.cell import Cell
 
 
 class Dish:
-    def __init__(self, dish_shape: tuple, foods: pd.DataFrame, start_loc: tuple, mould_shape: tuple, init_mould_coverage: float,
-                 decay: float):
+    def __init__(
+        self,
+        dish_shape: tuple,
+        foods: pd.DataFrame,
+        start_loc: tuple,
+        mould_shape: tuple,
+        init_mould_coverage: float,
+        decay: float,
+    ):
         self.lattice = self.initialise_dish(dish_shape)
         self.dish_size = dish_shape[0] * dish_shape[1]
         self.all_foods = {}
@@ -19,7 +25,9 @@ class Dish:
         self.food_positions = {}
         self.food_graph = nx.Graph()
         self.initialise_food(foods)
-        self.mould = self.initialise_slime_mould(self, start_loc, mould_shape, init_mould_coverage, decay)
+        self.mould = self.initialise_slime_mould(
+            self, start_loc, mould_shape, init_mould_coverage, decay
+        )
 
     @staticmethod
     def initialise_dish(dish_shape):
@@ -38,8 +46,8 @@ class Dish:
         Adds food cells in a square with length size
         """
         for i, station in foods.iterrows():
-            idx = (station['x'], station['y'])
-            value = station['value']
+            idx = (station["x"], station["y"])
+            value = station["value"]
 
             self.food_positions[i] = idx
 
@@ -61,7 +69,9 @@ class Dish:
         self.food_graph.add_nodes_from(self.food_positions)
 
     @staticmethod
-    def initialise_slime_mould(dish, start_loc, mould_shape, init_mould_coverage, decay):
+    def initialise_slime_mould(
+        dish, start_loc, mould_shape, init_mould_coverage, decay
+    ):
         """
         initialise the mould
         """
@@ -77,16 +87,20 @@ class Dish:
             pheromones[i] = lattice[i].pheromone
         return pheromones
 
-    def draw_pheromones(self, cmap='YlOrRd'):
+    def draw_pheromones(self, cmap="YlOrRd"):
         """Draws the cells."""
         data = self.pheromones(self.lattice)
         data = data.T
 
-        return plt.imshow(self.pheromones(self.lattice),
-                          cmap=cmap,
-                          vmin=0, vmax=10,
-                          interpolation='none',
-                          origin='lower', extent=[0, data.shape[1], 0, data.shape[0]])
+        return plt.imshow(
+            self.pheromones(self.lattice),
+            cmap=cmap,
+            vmin=0,
+            vmax=10,
+            interpolation="none",
+            origin="lower",
+            extent=[0, data.shape[1], 0, data.shape[0]],
+        )
 
     def animate(self, frames=10, interval=200, filename=None):
         """
@@ -95,15 +109,17 @@ class Dish:
         fig = plt.figure(figsize=(6.3, 5))
 
         im = self.draw_pheromones()
-        plt.axis('tight')
-        plt.axis('image')
-        plt.tick_params(which='both',
-                        bottom=False,
-                        top=False,
-                        left=False,
-                        right=False,
-                        labelbottom=False,
-                        labelleft=False)
+        plt.axis("tight")
+        plt.axis("image")
+        plt.tick_params(
+            which="both",
+            bottom=False,
+            top=False,
+            left=False,
+            right=False,
+            labelbottom=False,
+            labelleft=False,
+        )
 
         def func(frame):
             self.mould.evolve()
@@ -112,7 +128,9 @@ class Dish:
 
         ani = FuncAnimation(fig, func, frames=frames, blit=True, interval=interval)
         fps = 1 / (interval / 1000)
-        filename is not None and ani.save(filename, dpi=150, writer=PillowWriter(fps=fps))
+        filename is not None and ani.save(
+            filename, dpi=150, writer=PillowWriter(fps=fps)
+        )
         return ani
 
     def get_all_foods_idx(self):
@@ -141,4 +159,3 @@ class Dish:
 
     def get_dish_size(self):
         return self.dish_size
-

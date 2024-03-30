@@ -1,10 +1,9 @@
+import math
 import random
 
 import numpy as np
-
-from slime.slime import SlimeCell
 from slime.cell import Cell
-import math
+from slime.slime import SlimeCell
 
 TARGET_SWITCH_THRESHOLD = 5
 
@@ -42,7 +41,14 @@ def get_corner_slime_cells(slime_cells, current_direction, direction_list=None):
 
 
 class Mould:
-    def __init__(self, dish, start_loc: tuple, mould_shape: tuple, init_mould_coverage: float, decay: float):
+    def __init__(
+        self,
+        dish,
+        start_loc: tuple,
+        mould_shape: tuple,
+        init_mould_coverage: float,
+        decay: float,
+    ):
         self.dish = dish
         self.decay = decay
         self.slime_cells = {}
@@ -90,7 +96,10 @@ class Mould:
         """
         for x in start_loc[0] - mould_shape[0], start_loc[0] + mould_shape[0]:
             for y in start_loc[1] - mould_shape[1], start_loc[1] + mould_shape[1]:
-                if random.random() < init_mould_coverage and (x, y) not in self.dish.get_all_foods_idx():
+                if (
+                    random.random() < init_mould_coverage
+                    and (x, y) not in self.dish.get_all_foods_idx()
+                ):
                     self.slime_cell_generator(idx=(x, y))
         self.setup_capital_slime()
         self.update_target_food()
@@ -102,8 +111,12 @@ class Mould:
         if self.capital_slime is not None:
             previous_capital_slime = self.capital_slime
             previous_capital_slime.remove_capital()
-            self.update_slime_cell(previous_capital_slime.get_idx(), previous_capital_slime)
-        self.capital_slime = get_corner_slime_cells(self.slime_cells, random.choice([0, 1, 2, 3]))
+            self.update_slime_cell(
+                previous_capital_slime.get_idx(), previous_capital_slime
+            )
+        self.capital_slime = get_corner_slime_cells(
+            self.slime_cells, random.choice([0, 1, 2, 3])
+        )
         self.update_slime_cell(self.capital_slime.get_idx(), self.capital_slime)
 
     def slime_cell_generator(self, idx, pheromone=None, decay=0, is_capital=False):
@@ -116,8 +129,14 @@ class Mould:
         :return: the generated slime cell
         """
         if pheromone is None:
-            pheromone = 4. * (1 - decay)
-        slime_cell = SlimeCell(idx=idx, pheromone=pheromone, mould=self, dish=self.dish, is_capital=is_capital)
+            pheromone = 4.0 * (1 - decay)
+        slime_cell = SlimeCell(
+            idx=idx,
+            pheromone=pheromone,
+            mould=self,
+            dish=self.dish,
+            is_capital=is_capital,
+        )
         if slime_cell.is_capital:
             self.capital_slime = slime_cell
         self.update_slime_cell(slime_cell.get_idx(), slime_cell)
@@ -150,7 +169,9 @@ class Mould:
         if len(self.reached_food_ids) == 0:
             return
         self.nearest_connected_target = self.find_nearest_connected_food(food_id)
-        if not self.dish.get_food_graph().has_edge(food_id, self.nearest_connected_target):
+        if not self.dish.get_food_graph().has_edge(
+            food_id, self.nearest_connected_target
+        ):
             self.dish.add_food_edge(food_id, self.nearest_connected_target)
 
     def update_target_food(self):
@@ -158,7 +179,9 @@ class Mould:
         switch the target food
         """
         # set a target food
-        remaining_food_ids = set(self.dish.get_all_foods().keys()) - self.reached_food_ids
+        remaining_food_ids = (
+            set(self.dish.get_all_foods().keys()) - self.reached_food_ids
+        )
         min_i = self.capital_slime.find_nearest_food(remaining_food_ids)[0]
         if min_i != self.current_target:
             self.current_target = (min_i, self.dish.get_food_position(min_i))
@@ -173,18 +196,24 @@ class Mould:
         update each slime after each evolution step of the mould
         """
         # update statistics after each evolution
-        active_slime = [slime.pheromone for slime in list(self.slime_cells.values())
-                        if slime.pheromone > 1]
+        active_slime = [
+            slime.pheromone
+            for slime in list(self.slime_cells.values())
+            if slime.pheromone > 1
+        ]
         average_pheromone = np.average(active_slime)
         self.avg_ph.append(average_pheromone)
         self.total_num.append(len(self.slime_cells))
         self.total_active_num.append(len(active_slime))
         self.total_inactive_num.append(len(self.slime_cells) - len(active_slime))
         self.total_reached_foods.append(len(self.reached_food_ids))
-        self.coverage_ratio.append(len(self.slime_cells)/self.dish.get_dish_size())
+        self.coverage_ratio.append(len(self.slime_cells) / self.dish.get_dish_size())
 
-        if self.target_switch_count > TARGET_SWITCH_THRESHOLD or \
-                self.capital_slime.get_reached_food_id() is not None or self.current_target[0] in self.reached_food_ids:
+        if (
+            self.target_switch_count > TARGET_SWITCH_THRESHOLD
+            or self.capital_slime.get_reached_food_id() is not None
+            or self.current_target[0] in self.reached_food_ids
+        ):
             self.target_switch_count = 0
             self.setup_capital_slime()
             self.update_target_food()
@@ -228,4 +257,3 @@ class Mould:
 
     def get_nearest_connected_target(self):
         return self.nearest_connected_target
-
