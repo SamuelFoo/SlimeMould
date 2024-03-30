@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import pandas as pd
-from matplotlib.animation import FuncAnimation, PillowWriter
 
 from ..slime.cell import Cell
 from ..slime.food import FoodCell
@@ -90,52 +89,14 @@ class Dish:
             pheromones[i] = lattice[i].pheromone
         return pheromones
 
-    def draw_pheromones(self, cmap="YlOrRd"):
-        """Draws the cells."""
-        data = self.pheromones(self.lattice)
-        data = data.T
-
-        return plt.imshow(
-            self.pheromones(self.lattice),
-            cmap=cmap,
-            vmin=0,
-            vmax=10,
-            interpolation="none",
-            origin="lower",
-            extent=[0, data.shape[1], 0, data.shape[0]],
-        )
-
-    def animate(self, frames=10, interval=200, filename=None):
-        """
-        Returns an animation
-        """
-        fig = plt.figure(figsize=(6.3, 5))
-
-        im = self.draw_pheromones()
-        plt.axis("tight")
-        plt.axis("image")
-        plt.tick_params(
-            which="both",
-            bottom=False,
-            top=False,
-            left=False,
-            right=False,
-            labelbottom=False,
-            labelleft=False,
-        )
-
-        def func(frame):
+    def run(self, frames):
+        data = []
+        for frame in range(frames):
             print(f"{frame} out of {frames}")
             self.mould.evolve()
-            im.set_data(self.pheromones(self.lattice).T)
-            return [im]
+            data.append(self.pheromones(self.lattice).T.copy())
 
-        ani = FuncAnimation(fig, func, frames=frames, blit=True, interval=interval)
-        fps = 1 / (interval / 1000)
-        filename is not None and ani.save(
-            filename, dpi=150, writer=PillowWriter(fps=fps)
-        )
-        return ani
+        return data
 
     def get_all_foods_idx(self):
         return self.all_foods_idx
