@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from ..slime.cell import Cell
+from ..slime.diffusion_params import DEFAULT_DIFFUSION_PARAMS, DiffusionParams
 from ..slime.food import FoodCell
 from ..slime.mould import Mould
 
@@ -17,6 +18,7 @@ class Dish:
         mould_shape: tuple,
         init_mould_coverage: float,
         decay: float,
+        diffusion_params: DiffusionParams = DEFAULT_DIFFUSION_PARAMS,
     ):
         self.lattice = self.initialise_dish(dish_shape)
         self.dish_size = dish_shape[0] * dish_shape[1]
@@ -26,7 +28,12 @@ class Dish:
         self.food_graph = nx.Graph()
         self.initialise_food(foods)
         self.mould = self.initialise_slime_mould(
-            self, start_loc, mould_shape, init_mould_coverage, decay
+            self,
+            start_loc,
+            mould_shape,
+            init_mould_coverage,
+            decay,
+            diffusion_params=diffusion_params,
         )
 
     @staticmethod
@@ -72,12 +79,24 @@ class Dish:
 
     @staticmethod
     def initialise_slime_mould(
-        dish, start_loc, mould_shape, init_mould_coverage, decay
+        dish,
+        start_loc,
+        mould_shape,
+        init_mould_coverage,
+        decay,
+        diffusion_params: DiffusionParams,
     ):
         """
         initialise the mould
         """
-        return Mould(dish, start_loc, mould_shape, init_mould_coverage, decay)
+        return Mould(
+            dish,
+            start_loc,
+            mould_shape,
+            init_mould_coverage,
+            decay,
+            diffusion_params=diffusion_params,
+        )
 
     @staticmethod
     def pheromones(lattice):

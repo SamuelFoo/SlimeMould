@@ -6,13 +6,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from ..slime.cell import Cell
-
-DIFFUSION_THRESHOLD = 3.5
-DIFFUSION_DECAY_RATE = 1.26
-DISTANCE_FOR_DIFFUSION_THRESHOLD = 55
-MOVING_THRESHOLD = 1
-MAX_PH = 5.5
-MAX_PH_INCREASE_STEP = 0.2
+from ..slime.diffusion_params import DiffusionParams
 
 
 def get_neighbours(idx):
@@ -56,7 +50,15 @@ def step_direction(index: int, idx: tuple):
 
 class SlimeCell(Cell):
 
-    def __init__(self, coord: tuple, pheromone: float, mould, dish, is_capital):
+    def __init__(
+        self,
+        coord: tuple,
+        pheromone: float,
+        mould,
+        dish,
+        is_capital,
+        diffusion_params: DiffusionParams,
+    ):
         super().__init__(pheromone=pheromone, cell_type=1)
 
         self.coord = coord
@@ -65,9 +67,19 @@ class SlimeCell(Cell):
         self.direction = None
         self.is_capital = is_capital
         self.reached_food_id = None
-        self.mould: Mould = mould
-        self.dish: Dish = dish
+        self.mould = mould
+        self.dish = dish
         self.food_path = []
+
+        # Diffusion Parameters
+        self.diffusion_threshold = diffusion_params.diffusion_threshold
+        self.diffusion_decay_rate = diffusion_params.diffusion_decay_rate
+        self.distance_for_diffusion_threshold = (
+            diffusion_params.distance_for_diffusion_threshold
+        )
+        self.moving_threshold = diffusion_params.moving_threshold
+        self.max_ph_threshold = diffusion_params.max_ph_threshold
+        self.max_ph_increase_step = diffusion_params.max_ph_increase_step
 
         # (food_id, food_coord)
         self.step_food = None
@@ -227,7 +239,7 @@ class SlimeCell(Cell):
             if neigh_cell.get_cell_type() == 0:
 
                 # next main diffusion place is an empty cell
-                if neigh == new_idx and self.pheromone > MOVING_THRESHOLD:
+                if neigh == new_idx and self.pheromone > self.moving_threshold:
                     # self.mould.update_slime_cell(new_idx, self)
                     self.mould.slime_cell_generator(
                         coord=neigh,
@@ -235,31 +247,32 @@ class SlimeCell(Cell):
                         decay=decay,
                         is_capital=self.is_capital,
                     )
-                    self.pheromone *= 1 - DIFFUSION_DECAY_RATE * decay
+                    self.pheromone *= 1 - self.diffusion_decay_rate * decay
 
                     self.is_capital = False
                     continue
 
                 # neighbour cell is a random diffusion cell
                 if (
-                    self.pheromone > DIFFUSION_THRESHOLD
+                    self.pheromone > self.diffusion_threshold
                     and self.find_nearest_food(self.mould.get_reached_food_ids())[1]
-                    < DISTANCE_FOR_DIFFUSION_THRESHOLD
+                    < self.distance_for_diffusion_threshold
                 ):
                     self.mould.slime_cell_generator(
                         coord=neigh,
-                        pheromone=self.pheromone / DIFFUSION_DECAY_RATE,
+                        pheromone=self.pheromone / self.diffusion_decay_rate,
                         decay=decay,
                     )
-                    self.pheromone *= 1 - (2 * DIFFUSION_DECAY_RATE * decay)
+                    self.pheromone *= 1 - (2 * self.diffusion_decay_rate * decay)
 
             # neighbor is a slime
             elif neigh_cell.get_cell_type() == 1:
 
                 # next main diffusion place is a slime cell
-                if neigh == new_idx and self.pheromone > MOVING_THRESHOLD:
+                if neigh == new_idx and self.pheromone > self.moving_threshold:
                     neigh_increase_ph = (
-                        neigh_cell.pheromone + self.pheromone / DIFFUSION_DECAY_RATE
+                        neigh_cell.pheromone
+                        + self.pheromone / self.diffusion_decay_rate
                     )
                     if neigh_increase_ph > neigh_cell.max_ph:
 
@@ -267,14 +280,17 @@ class SlimeCell(Cell):
 
                     else:
                         neigh_cell.pheromone = neigh_increase_ph
-                    self.pheromone /= DIFFUSION_DECAY_RATE
+                    self.pheromone /= self.diffusion_decay_rate
 
                     self.mould.update_slime_cell(new_idx, neigh_cell)
 
                 # neighbor bigger than self
                 # increase self-pheromone when find neighbor nearby
-                if neigh_cell.pheromone > self.pheromone and self.max_ph < MAX_PH:
-                    self.max_ph += MAX_PH_INCREASE_STEP
+                if (
+                    neigh_cell.pheromone > self.pheromone
+                    and self.max_ph < self.max_ph_threshold
+                ):
+                    self.max_ph += self.max_ph_increase_step
                     self.pheromone += neigh_cell.pheromone / 10
 
             # add pheromone if current cell find food nearby

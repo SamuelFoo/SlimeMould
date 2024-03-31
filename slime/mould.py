@@ -5,6 +5,7 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from ..slime.cell import Cell
+from ..slime.diffusion_params import DiffusionParams
 from ..slime.slime import SlimeCell
 
 TARGET_SWITCH_THRESHOLD = 5
@@ -50,11 +51,13 @@ class Mould:
         mould_shape: tuple,
         init_mould_coverage: float,
         decay: float,
+        diffusion_params: DiffusionParams,
     ):
         self.dish = dish
         self.decay = decay
         self.slime_cells = {}
         self.mould_shape = mould_shape
+        self.diffusion_params = diffusion_params
         self.reached_food_ids = set()
         self.current_target = 0
         self.nearest_connected_target = -1
@@ -138,6 +141,7 @@ class Mould:
             mould=self,
             dish=self.dish,
             is_capital=is_capital,
+            diffusion_params=self.diffusion_params,
         )
         if slime_cell.is_capital:
             self.capital_slime = slime_cell
