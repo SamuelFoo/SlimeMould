@@ -92,7 +92,7 @@ class Dish:
     def run(self, frames):
         data = []
         for frame in range(frames):
-            print(f"{frame} out of {frames}")
+            print(f"Running {frame} out of {frames}")
             self.mould.evolve()
             data.append(self.pheromones(self.lattice).T.copy())
 
