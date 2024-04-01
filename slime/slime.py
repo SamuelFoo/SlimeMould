@@ -270,16 +270,16 @@ class SlimeCell(Cell):
 
                 # next main diffusion place is a slime cell
                 if neigh == new_idx and self.pheromone > self.moving_threshold:
+
+                    # Neighbour's pheromone increases.
                     neigh_increase_ph = (
                         neigh_cell.pheromone
                         + self.pheromone / self.diffusion_decay_rate
                     )
-                    if neigh_increase_ph > neigh_cell.max_ph:
 
-                        neigh_cell.pheromone = neigh_cell.max_ph
+                    # Neighbour's pheromone is bounded by the max value.
+                    neigh_cell.pheromone = min(neigh_cell.max_ph, neigh_increase_ph)
 
-                    else:
-                        neigh_cell.pheromone = neigh_increase_ph
                     self.pheromone /= self.diffusion_decay_rate
 
                     self.mould.update_slime_cell(new_idx, neigh_cell)

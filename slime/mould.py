@@ -59,7 +59,7 @@ class Mould:
         self.mould_shape = mould_shape
         self.diffusion_params = diffusion_params
         self.reached_food_ids = set()
-        self.current_target = 0
+        self.current_target = -1
         self.nearest_connected_target = -1
         self.capital_slime = None
         self.initialise(start_loc, mould_shape, init_mould_coverage)
@@ -99,8 +99,10 @@ class Mould:
         :param mould_shape: the size of the initial mould
         :param init_mould_coverage: the coverage rate of the initial mould
         """
-        for x in start_loc[0] - mould_shape[0], start_loc[0] + mould_shape[0]:
-            for y in start_loc[1] - mould_shape[1], start_loc[1] + mould_shape[1]:
+        for x in range(start_loc[0] - mould_shape[0], start_loc[0] + mould_shape[0]):
+            for y in range(
+                start_loc[1] - mould_shape[1], start_loc[1] + mould_shape[1]
+            ):
                 if (
                     random.random() < init_mould_coverage
                     and (x, y) not in self.dish.get_all_foods_idx()
