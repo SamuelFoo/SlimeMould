@@ -63,14 +63,6 @@ class Mould:
         self.nearest_connected_target = -1
         self.capital_slime = None
         self.initialise(start_loc, mould_shape, init_mould_coverage)
-
-        self.avg_ph = []
-        self.total_num = []
-        self.total_active_num = []
-        self.total_inactive_num = []
-        self.total_reached_foods = []
-        self.coverage_ratio = []
-
         self.target_switch_count = 0
 
     def remove_slime_cell(self, idx):
@@ -211,13 +203,6 @@ class Mould:
             for slime in list(self.slime_cells.values())
             if slime.pheromone > 1
         ]
-        average_pheromone = np.average(active_slime)
-        self.avg_ph.append(average_pheromone)
-        self.total_num.append(len(self.slime_cells))
-        self.total_active_num.append(len(active_slime))
-        self.total_inactive_num.append(len(self.slime_cells) - len(active_slime))
-        self.total_reached_foods.append(len(self.reached_food_ids))
-        self.coverage_ratio.append(len(self.slime_cells) / self.dish.get_dish_size())
 
         if (
             self.target_switch_count > TARGET_SWITCH_THRESHOLD
@@ -246,24 +231,6 @@ class Mould:
 
     def get_reached_food_ids(self):
         return self.reached_food_ids
-
-    def get_avg_ph(self):
-        return self.avg_ph
-
-    def get_total_num(self):
-        return self.total_num
-
-    def get_total_active_num(self):
-        return self.total_active_num
-
-    def get_total_inactive_num(self):
-        return self.total_inactive_num
-
-    def get_coverage_ratio(self):
-        return self.coverage_ratio
-
-    def get_total_reached_foods(self):
-        return self.total_reached_foods
 
     def get_nearest_connected_target(self):
         return self.nearest_connected_target
