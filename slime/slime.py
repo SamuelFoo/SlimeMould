@@ -27,27 +27,6 @@ def get_neighbours(idx):
     ]
 
 
-def step_direction(index: int, idx: tuple):
-    """
-    get the next main diffusion step of the slime cell
-    :param index: direction index
-    :param idx: the tuple index of the slime cell
-    :return: the tuple index of the next main diffusion step
-    """
-    next_step = {
-        0: (0, 0),
-        1: (-1, -1),
-        2: (1, -1),
-        3: (-1, 1),
-        4: (1, 1),
-        5: (-1, 0),
-        6: (1, 0),
-        7: (0, -1),
-        8: (0, 1),
-    }
-    return next_step[index][0] + idx[0], next_step[index][1] + idx[1]
-
-
 class SlimeCell(Cell):
 
     def __init__(
@@ -64,7 +43,6 @@ class SlimeCell(Cell):
         self.coord = coord
         self.pheromone = pheromone
         self.max_ph = 4
-        self.direction = None
         self.is_capital = is_capital
         self.reached_food_id = None
         self.mould = mould
@@ -158,40 +136,17 @@ class SlimeCell(Cell):
                     self.dish.get_food_position(step_food_id),
                 )
 
-    def sensory(self):
+    def get_diffusion_direction(self):
         """
         set up the next main diffusion direction based on the location of the step food
         """
-        # target_food = self.mould.get_current_target()
-        # food_idx = target_food[1]
         if self.reached_food_id == self.step_food:
             self.reset_step_food()
-        food_idx = self.step_food[1]
 
-        # (-1, -1)
-        if food_idx[0] < self.coord[0] and food_idx[1] < self.coord[1]:
-            self.direction = 1
-        # (1, -1)
-        elif food_idx[0] > self.coord[0] and food_idx[1] < self.coord[1]:
-            self.direction = 2
-        # (-1, 1)
-        elif food_idx[0] < self.coord[0] and food_idx[1] > self.coord[1]:
-            self.direction = 3
-        # (1, 1)
-        elif food_idx[0] > self.coord[0] and food_idx[1] > self.coord[1]:
-            self.direction = 4
-        # (-1, 0)
-        elif food_idx[0] < self.coord[0]:
-            self.direction = 5
-        # (1, 0)
-        elif food_idx[0] > self.coord[0]:
-            self.direction = 6
-        # (0, -1)
-        elif food_idx[1] < self.coord[1]:
-            self.direction = 7
-        # (0, 1)
-        elif food_idx[1] > self.coord[1]:
-            self.direction = 8
+        food_idx = np.array(self.step_food[1])
+        coord = np.array(self.coord)
+
+        return np.sign(food_idx - coord).astype(np.int64)
 
     @staticmethod
     def check_boundary(idx, lattice_shape):
@@ -221,7 +176,7 @@ class SlimeCell(Cell):
         :param lattice: dish lattice
         :param decay: the rate for decreasing the pheromone of the slime cell
         """
-        new_idx = step_direction(self.direction, self.coord)
+        new_idx = tuple(self.get_diffusion_direction() + self.coord)
         neighbours = get_neighbours(self.coord)
 
         # make sure the first neighbour is the next step
@@ -312,7 +267,6 @@ class SlimeCell(Cell):
         The sensory stage: all slime cells adjust their direction based on the food
         The diffusion stage: all pheromones undergo diffusion
         """
-        self.sensory()
         self.diffusion(lattice, decay)
 
     def get_coord(self):
