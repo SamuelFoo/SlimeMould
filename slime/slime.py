@@ -85,7 +85,7 @@ class SlimeCell(Cell):
         """
         setup the food path the slime cell will go through
         """
-        # target food (food_id, food_idx)
+        # target food (food_id, food_coord)
         target_food_id = self.mould.get_current_target()[0]
         self.curr_target = target_food_id
 
@@ -128,8 +128,8 @@ class SlimeCell(Cell):
             self.set_reached_food_path()
         else:
             # reached step food
-            step_food_idx = self.dish.get_food_position(self.step_food[0])
-            if math.dist(step_food_idx, self.coord) < 3:
+            step_food_coord = self.dish.get_food_position(self.step_food[0])
+            if math.dist(step_food_coord, self.coord) < 3:
                 step_food_id = self.food_path.pop(0)
                 self.step_food = (
                     step_food_id,
@@ -143,10 +143,10 @@ class SlimeCell(Cell):
         if self.reached_food_id == self.step_food:
             self.reset_step_food()
 
-        food_idx = np.array(self.step_food[1])
+        food_coord = np.array(self.step_food[1])
         coord = np.array(self.coord)
 
-        return np.sign(food_idx - coord).astype(np.int64)
+        return np.sign(food_coord - coord).astype(np.int64)
 
     @staticmethod
     def check_boundary(idx, lattice_shape):

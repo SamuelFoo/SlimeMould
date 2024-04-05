@@ -55,19 +55,19 @@ class Dish:
         self.food_positions_array = np.array([foods["x"], foods["y"]]).T
 
         for i, station in foods.iterrows():
-            idx = (station["x"], station["y"])
+            coord = (station["x"], station["y"])
             value = station["value"]
 
-            self.food_positions[i] = idx
+            self.food_positions[i] = coord
 
             for x in range(value // 2):
                 for y in range(value // 2):
-                    food_idx = (idx[0] - x, idx[1] - y)
-                    food = FoodCell(food_id=i, food_idx=food_idx)
-                    self.lattice[food_idx] = food
+                    food_coord = (coord[0] - x, coord[1] - y)
+                    food = FoodCell(food_id=i, food_coord=food_coord)
+                    self.lattice[food_coord] = food
 
                     # add food idx
-                    self.all_foods_idx.append(food_idx)
+                    self.all_foods_idx.append(food_coord)
 
                     # add all foods
                     if i not in self.all_foods:
@@ -135,8 +135,8 @@ class Dish:
     def get_food_position(self, food_id):
         return self.food_positions[food_id]
 
-    def get_food_positions(self, food_idxs):
-        return self.food_positions_array[np.array(list(food_idxs)).astype(np.int64)]
+    def get_food_positions(self, food_ids):
+        return self.food_positions_array[np.array(list(food_ids), dtype=np.int64)]
 
     def add_food_edge(self, source, target):
         self.food_graph.add_edge(source, target)

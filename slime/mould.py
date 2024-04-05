@@ -153,9 +153,9 @@ class Mould:
             min_i = -1
             return min_i
 
-        food_idx = self.dish.get_food_position(food_id)
+        food_coord = self.dish.get_food_position(food_id)
         dists = cdist(
-            self.dish.get_food_positions(self.reached_food_ids), [np.array(food_idx)]
+            self.dish.get_food_positions(self.reached_food_ids), [np.array(food_coord)]
         )
         argmin = dists.argmin()
         min_i = list(self.reached_food_ids)[argmin]
