@@ -23,7 +23,7 @@ class Dish:
         self.lattice = self.initialise_dish(dish_shape)
         self.dish_size = dish_shape[0] * dish_shape[1]
         self.all_foods = {}
-        self.all_foods_idx = []
+        self.all_foods_coords = []
         self.food_positions = {}
         self.food_graph = nx.Graph()
         self.initialise_food(foods)
@@ -66,8 +66,8 @@ class Dish:
                     food = FoodCell(food_id=i, food_coord=food_coord)
                     self.lattice[food_coord] = food
 
-                    # add food idx
-                    self.all_foods_idx.append(food_coord)
+                    # add food coord
+                    self.all_foods_coords.append(food_coord)
 
                     # add all foods
                     if i not in self.all_foods:
@@ -117,8 +117,8 @@ class Dish:
 
         return data
 
-    def get_all_foods_idx(self):
-        return self.all_foods_idx
+    def get_all_foods_coords(self):
+        return self.all_foods_coords
 
     def get_all_foods(self):
         return self.all_foods

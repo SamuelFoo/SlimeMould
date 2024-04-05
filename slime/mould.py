@@ -97,7 +97,7 @@ class Mould:
             ):
                 if (
                     random.random() < init_mould_coverage
-                    and (x, y) not in self.dish.get_all_foods_idx()
+                    and (x, y) not in self.dish.get_all_foods_coords()
                 ):
                     self.slime_cell_generator(coord=(x, y))
         self.setup_capital_slime()
