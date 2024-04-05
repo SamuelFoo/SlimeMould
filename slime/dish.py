@@ -129,9 +129,6 @@ class Dish:
     def set_lattice(self, idx, obj):
         self.lattice[idx] = obj
 
-    def get_food_nodes(self):
-        return self.food_graph.nodes()
-
     def get_food_position(self, food_id):
         return self.food_positions[food_id]
 

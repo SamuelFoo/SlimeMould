@@ -189,21 +189,12 @@ class Mould:
             self.current_target = (min_i, self.dish.get_food_position(min_i))
             # update the connection to the target food from reachable food
             self.nearest_connected_target = self.find_nearest_connected_food(min_i)
-            # optional
             self.update_food_connection(min_i)
 
     def update_slime(self):
         """
-        update statistics of the mould and
-        update each slime after each evolution step of the mould
+        Update each slime after each evolution step of the mould
         """
-        # update statistics after each evolution
-        active_slime = [
-            slime.pheromone
-            for slime in list(self.slime_cells.values())
-            if slime.pheromone > 1
-        ]
-
         if (
             self.target_switch_count > TARGET_SWITCH_THRESHOLD
             or self.capital_slime.get_reached_food_id() is not None
