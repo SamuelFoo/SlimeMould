@@ -1,5 +1,5 @@
-import math
 import random
+from typing import TYPE_CHECKING, Dict
 
 import numpy as np
 from scipy.spatial.distance import cdist
@@ -8,10 +8,15 @@ from ..slime.cell import Cell
 from ..slime.diffusion_params import DiffusionParams
 from ..slime.slime import SlimeCell
 
+if TYPE_CHECKING:
+    from ..slime.dish import Dish
+
 TARGET_SWITCH_THRESHOLD = 5
 
 
-def get_corner_slime_cells(slime_cells, current_direction, direction_list=None):
+def get_corner_slime_cells(
+    slime_cells: Dict[int, SlimeCell], current_direction, direction_list: list = None
+):
     """
     get the slime cell in the corner of the mould for deciding the next target food
     :return: the slime cell in the selected corner
@@ -53,7 +58,7 @@ class Mould:
         decay: float,
         diffusion_params: DiffusionParams,
     ):
-        self.dish = dish
+        self.dish: Dish = dish
         self.decay = decay
         self.slime_cells = {}
         self.mould_shape = mould_shape

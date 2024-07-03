@@ -1,5 +1,6 @@
 import math
 from collections import deque
+from typing import TYPE_CHECKING
 
 import networkx as nx
 import numpy as np
@@ -7,6 +8,10 @@ from scipy.spatial.distance import cdist
 
 from ..slime.cell import Cell
 from ..slime.diffusion_params import DiffusionParams
+
+if TYPE_CHECKING:
+    from ..slime.dish import Dish
+    from ..slime.mould import Mould
 
 
 def get_neighbours(idx):
@@ -45,8 +50,8 @@ class SlimeCell(Cell):
         self.max_ph = 4
         self.is_capital = is_capital
         self.reached_food_id = None
-        self.mould = mould
-        self.dish = dish
+        self.mould: Mould = mould
+        self.dish: Dish = dish
         self.food_path = []
 
         # Diffusion Parameters
@@ -89,9 +94,7 @@ class SlimeCell(Cell):
         target_food_id = self.mould.get_current_target()[0]
         self.curr_target = target_food_id
 
-        mould_reached_food_ids = self.mould.get_reached_food_ids()
-
-        if len(mould_reached_food_ids) == 0:
+        if len(self.mould.get_reached_food_ids()) == 0:
             self.food_path.append(self.mould.get_current_target()[0])
 
         else:
